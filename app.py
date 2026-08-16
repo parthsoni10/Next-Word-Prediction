@@ -272,8 +272,21 @@ if model_loaded:
         st.subheader("Type a sentence to get real-time next-word predictions")
         
         # Session state for prompt
-        if "user_prompt" not in st.session_state:
-            st.session_state["user_prompt"] = "how are"
+        if "input_text_box" not in st.session_state:
+            st.session_state["input_text_box"] = "how are"
+
+        def set_prompt(val):
+            st.session_state["input_text_box"] = val
+
+        def append_prompt(val):
+            curr = st.session_state.get("input_text_box", "").strip()
+            if curr:
+                st.session_state["input_text_box"] = f"{curr} {val}"
+            else:
+                st.session_state["input_text_box"] = val
+
+        def clear_prompt():
+            st.session_state["input_text_box"] = ""
 
         # Preset Quick Prompt Buttons
         st.markdown("**Quick Prompts:**")
@@ -281,19 +294,19 @@ if model_loaded:
         presets = ["how are", "what is the", "once upon a", "thank you for", "i want to", "the secret of"]
         
         for idx, preset in enumerate(presets):
-            if cols_preset[idx].button(preset, key=f"btn_preset_{idx}"):
-                st.session_state["user_prompt"] = preset
+            cols_preset[idx].button(
+                preset, 
+                key=f"btn_preset_{idx}", 
+                on_click=set_prompt, 
+                args=(preset,)
+            )
 
         # Text input field
         user_input = st.text_input(
             "Input Text Prompt:",
-            value=st.session_state["user_prompt"],
             key="input_text_box",
             placeholder="Type your sentence here..."
         )
-        
-        # Keep session state updated
-        st.session_state["user_prompt"] = user_input
 
         if user_input.strip():
             start_time = time.time()
@@ -338,14 +351,15 @@ if model_loaded:
                     w = pred['word']
                     p_pct = pred['probability'] * 100
                     col_idx = i % 2
-                    if pill_cols[col_idx].button(f"➕ {w} ({p_pct:.1f}%)", key=f"append_word_{i}"):
-                        st.session_state["user_prompt"] = (user_input.strip() + " " + w).strip()
-                        st.rerun()
+                    pill_cols[col_idx].button(
+                        f"➕ {w} ({p_pct:.1f}%)", 
+                        key=f"append_word_{i}", 
+                        on_click=append_prompt, 
+                        args=(w,)
+                    )
 
                 st.markdown("---")
-                if st.button("🧹 Clear Input", use_container_width=True):
-                    st.session_state["user_prompt"] = ""
-                    st.rerun()
+                st.button("🧹 Clear Input", use_container_width=True, on_click=clear_prompt)
 
         else:
             st.info("💡 Type any phrase or click a quick prompt above to see next-word predictions!")
