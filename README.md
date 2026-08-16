@@ -1,4 +1,4 @@
-<![CDATA[<div align="center">
+<div align="center">
 
 # 🔮 Next Word Prediction
 
@@ -15,10 +15,10 @@
 **A real-time next-word prediction engine** that uses a trained LSTM (Long Short-Term Memory) neural network to predict the most probable next words given any input text. Built with a beautiful glassmorphic Streamlit UI, it runs inference directly from raw HDF5 weights — **no TensorFlow/Keras required at runtime.**
 
 [🚀 Getting Started](#-getting-started) •
-[🏗️ Architecture](#️-model-architecture) •
+[🏗️ Architecture](#%EF%B8%8F-model-architecture) •
 [✨ Features](#-features) •
 [📖 How It Works](#-how-it-works) •
-[🛠️ Tech Stack](#️-tech-stack)
+[🛠️ Tech Stack](#%EF%B8%8F-tech-stack)
 
 </div>
 
@@ -44,12 +44,12 @@ The core prediction engine is a **Sequential LSTM** model with the following arc
 
 ```mermaid
 graph TD
-    A["📝 Input Text<br/><i>'how are'</i>"] --> B["🔤 Tokenizer<br/><i>Text → Integer Sequence</i>"]
-    B --> C["📏 Padding<br/><i>Pad/Truncate to 744 tokens</i>"]
-    C --> D["🧊 Embedding Layer<br/><i>10,000 × 50 dimensions</i><br/><b>500,000 params</b>"]
-    D --> E["🧠 LSTM Layer<br/><i>128 Hidden Units</i><br/><b>91,648 params</b>"]
-    E --> F["⚡ Dense Layer<br/><i>128 → 10,000 (Softmax)</i><br/><b>1,290,000 params</b>"]
-    F --> G["🏆 Top-K Predictions<br/><i>'you' (62.3%), 'doing' (11.1%)...</i>"]
+    A["📝 Input Text\n'how are'"] --> B["🔤 Tokenizer\nText to Integer Sequence"]
+    B --> C["📏 Padding\nPad/Truncate to 744 tokens"]
+    C --> D["🧊 Embedding Layer\n10,000 x 50 dimensions\n500,000 params"]
+    D --> E["🧠 LSTM Layer\n128 Hidden Units\n91,648 params"]
+    E --> F["⚡ Dense Layer\n128 to 10,000 Softmax\n1,290,000 params"]
+    F --> G["🏆 Top-K Predictions\n'you' 62.3%, 'doing' 11.1%"]
 
     style A fill:#1e1b4b,stroke:#818cf8,color:#e0e7ff
     style B fill:#1e1b4b,stroke:#818cf8,color:#e0e7ff
@@ -78,24 +78,24 @@ graph TD
 
 ```mermaid
 sequenceDiagram
-    participant U as 👤 User
-    participant UI as 🎨 Streamlit UI
-    participant T as 🔤 Tokenizer
-    participant L as 🧠 LSTM Engine
-    participant S as 📊 Softmax
+    participant U as User
+    participant UI as Streamlit UI
+    participant T as Tokenizer
+    participant L as LSTM Engine
+    participant S as Softmax
 
     U->>UI: Types "once upon a"
     UI->>T: Send raw text
     T->>T: Lowercase + clean filters
-    T->>T: Map words → token IDs [432, 87, 12]
+    T->>T: Map words to token IDs
     T->>T: Pad sequence to length 744
     T->>L: Padded integer sequence
-    L->>L: Embedding lookup (token → 50D vector)
-    L->>L: LSTM forward pass (128 hidden units)
-    Note over L: Gates: Input, Forget, Cell, Output<br/>h_t = o_t ⊙ tanh(c_t)
-    L->>S: Hidden state h (128-dim)
-    S->>S: Dense matmul (128 → 10,000)
-    S->>S: Softmax → probability distribution
+    L->>L: Embedding lookup
+    L->>L: LSTM forward pass 128 units
+    Note over L: Gates: Input, Forget, Cell, Output
+    L->>S: Hidden state h 128-dim
+    S->>S: Dense matmul 128 to 10,000
+    S->>S: Softmax probability distribution
     S->>UI: Top-K words + probabilities
     UI->>U: Display prediction cards
 ```
@@ -104,23 +104,23 @@ sequenceDiagram
 
 ```mermaid
 graph LR
-    subgraph LSTM_Cell ["🧠 LSTM Cell (at each timestep)"]
+    subgraph LSTM_Cell ["LSTM Cell at each timestep"]
         direction TB
-        X["x_t<br/>(Embedding)"] --> GATES
-        H["h_(t-1)<br/>(Prev Hidden)"] --> GATES
-        GATES["Gate Computation<br/><i>W·x + U·h + b</i>"]
-        GATES --> I["🚪 Input Gate<br/><i>σ(gates[0:128])</i>"]
-        GATES --> FG["🚪 Forget Gate<br/><i>σ(gates[128:256])</i>"]
-        GATES --> CT["📝 Cell Candidate<br/><i>tanh(gates[256:384])</i>"]
-        GATES --> O["🚪 Output Gate<br/><i>σ(gates[384:512])</i>"]
+        X["x_t Embedding"] --> GATES
+        H["h_t-1 Prev Hidden"] --> GATES
+        GATES["Gate Computation\nW*x + U*h + b"]
+        GATES --> I["Input Gate\nsigmoid 0:128"]
+        GATES --> FG["Forget Gate\nsigmoid 128:256"]
+        GATES --> CT["Cell Candidate\ntanh 256:384"]
+        GATES --> O["Output Gate\nsigmoid 384:512"]
 
-        FG --> MUL1["× c_(t-1)"]
-        I --> MUL2["× c̃_t"]
+        FG --> MUL1["Multiply c_t-1"]
+        I --> MUL2["Multiply c_tilde"]
         CT --> MUL2
-        MUL1 --> ADD["+ → c_t"]
+        MUL1 --> ADD["Add to get c_t"]
         MUL2 --> ADD
-        ADD --> TANH["tanh(c_t)"]
-        O --> MUL3["× → h_t"]
+        ADD --> TANH["tanh c_t"]
+        O --> MUL3["Multiply to get h_t"]
         TANH --> MUL3
     end
 
@@ -135,18 +135,18 @@ graph LR
 
 ```mermaid
 flowchart TD
-    START["🌱 Seed Text<br/><i>'once upon a'</i>"] --> LOOP{"🔄 For each word<br/>(1 to N)"}
+    START["Seed Text: once upon a"] --> LOOP{"For each word 1 to N"}
     LOOP --> TOK["Tokenize current text"]
     TOK --> PAD["Pad to 744 tokens"]
     PAD --> LSTM["LSTM Forward Pass"]
     LSTM --> LOGITS["Compute logits"]
-    LOGITS --> TEMP["Apply Temperature<br/><i>logits / T</i>"]
-    TEMP --> SOFT["Softmax → Probabilities"]
-    SOFT --> SAMPLE["Random Sample<br/>(weighted by probs)"]
+    LOGITS --> TEMP["Apply Temperature\nlogits / T"]
+    TEMP --> SOFT["Softmax to Probabilities"]
+    SOFT --> SAMPLE["Random Sample\nweighted by probs"]
     SAMPLE --> APPEND["Append word to text"]
-    APPEND --> CHECK{"More words<br/>to generate?"}
+    APPEND --> CHECK{"More words\nto generate?"}
     CHECK -- Yes --> LOOP
-    CHECK -- No --> OUTPUT["📝 Final Generated Text<br/><i>'once upon a time there<br/>was a young man who'</i>"]
+    CHECK -- No --> OUTPUT["Final Generated Text"]
 
     style START fill:#1e1b4b,stroke:#818cf8,color:#e0e7ff
     style OUTPUT fill:#134e4a,stroke:#2dd4bf,color:#e0e7ff
@@ -160,22 +160,22 @@ flowchart TD
 
 ```mermaid
 graph LR
-    subgraph Frontend ["🎨 Frontend"]
+    subgraph Frontend ["Frontend"]
         ST["Streamlit"]
-        CSS["Custom CSS<br/>Glassmorphism"]
-        FONTS["Google Fonts<br/>Plus Jakarta Sans<br/>JetBrains Mono"]
+        CSS["Custom CSS\nGlassmorphism"]
+        FONTS["Google Fonts\nPlus Jakarta Sans\nJetBrains Mono"]
     end
 
-    subgraph Backend ["⚙️ Backend"]
-        NP["NumPy<br/>(Matrix Ops)"]
-        H5["h5py<br/>(HDF5 Weights)"]
-        PK["Pickle<br/>(Tokenizer)"]
+    subgraph Backend ["Backend"]
+        NP["NumPy\nMatrix Ops"]
+        H5["h5py\nHDF5 Weights"]
+        PK["Pickle\nTokenizer"]
     end
 
-    subgraph Model ["🧠 Model"]
-        LSTM2["LSTM<br/>(128 units)"]
-        EMB["Embedding<br/>(50 dim)"]
-        DENSE["Dense<br/>(Softmax)"]
+    subgraph Model ["Model"]
+        LSTM2["LSTM\n128 units"]
+        EMB["Embedding\n50 dim"]
+        DENSE["Dense\nSoftmax"]
     end
 
     ST --> NP
@@ -196,13 +196,13 @@ graph LR
 ```
 Next-Word-Prediction/
 │
-├── 📄 app.py                 # Streamlit web application (UI + logic)
-├── 🧠 predictor.py           # LSTM inference engine (raw NumPy forward pass)
-├── 📦 lstm_model.h5          # Trained LSTM model weights (HDF5 format, ~22.6 MB)
-├── 📖 tokenizer.pkl          # Fitted tokenizer (word ↔ index mappings, ~359 KB)
-├── 📏 max_len.pkl            # Maximum sequence length parameter (745)
-├── 📋 requirements.txt       # Python dependencies
-└── 📝 README.md              # You are here!
+├── app.py                 # Streamlit web application (UI + logic)
+├── predictor.py           # LSTM inference engine (raw NumPy forward pass)
+├── lstm_model.h5          # Trained LSTM model weights (HDF5 format, ~22.6 MB)
+├── tokenizer.pkl          # Fitted tokenizer (word-index mappings, ~359 KB)
+├── max_len.pkl            # Maximum sequence length parameter (745)
+├── requirements.txt       # Python dependencies
+└── README.md              # You are here!
 ```
 
 ---
@@ -234,10 +234,10 @@ The app will open in your browser at `http://localhost:8501` 🎉
 
 | Package | Version | Purpose |
 |---|---|---|
-| `streamlit` | ≥ 1.30.0 | Web application framework |
-| `h5py` | ≥ 3.10.0 | Load LSTM model weights from HDF5 |
-| `numpy` | ≥ 1.24.0 | Matrix operations & LSTM forward pass |
-| `pandas` | ≥ 2.0.0 | Data display (architecture table, vocab) |
+| `streamlit` | >= 1.30.0 | Web application framework |
+| `h5py` | >= 3.10.0 | Load LSTM model weights from HDF5 |
+| `numpy` | >= 1.24.0 | Matrix operations & LSTM forward pass |
+| `pandas` | >= 2.0.0 | Data display (architecture table, vocab) |
 
 ---
 
@@ -255,9 +255,9 @@ The app will open in your browser at `http://localhost:8501` 🎉
 1. Enter a **seed prompt** (e.g., `"once upon a"`)
 2. Set the **number of words** to generate (1–30)
 3. Adjust the **temperature** slider:
-   - `Low (0.1–0.5)` → More deterministic, repetitive output
-   - `Medium (0.7–1.0)` → Balanced creativity
-   - `High (1.2–2.0)` → More random, creative output
+   - `Low (0.1-0.5)` — More deterministic, repetitive output
+   - `Medium (0.7-1.0)` — Balanced creativity
+   - `High (1.2-2.0)` — More random, creative output
 4. Click **Generate** and watch the LSTM compose text
 
 ### 📊 Tab 3 — Architecture & Vocabulary
@@ -280,10 +280,10 @@ for token_id in sequence:
     
     i = sigmoid(gates[0:128])       # Input gate
     f = sigmoid(gates[128:256])     # Forget gate  
-    c̃ = tanh(gates[256:384])       # Cell candidate
+    c_candidate = tanh(gates[256:384])  # Cell candidate
     o = sigmoid(gates[384:512])     # Output gate
     
-    c = f * c + i * c̃              # Update cell state
+    c = f * c + i * c_candidate     # Update cell state
     h = o * tanh(c)                 # Update hidden state
 
 # Final prediction
@@ -301,21 +301,17 @@ This approach makes the app:
 
 ## 📊 Model Specifications
 
-```
-╔══════════════════════════════════════════════════════════╗
-║                   MODEL SUMMARY                         ║
-╠══════════════════════════════════════════════════════════╣
-║  Architecture      │  Sequential LSTM                   ║
-║  Embedding Dim     │  50                                ║
-║  LSTM Units        │  128                               ║
-║  Vocabulary Size   │  8,979 words (10,000 incl. OOV)    ║
-║  Max Seq Length    │  745 tokens                         ║
-║  Total Parameters  │  ~1.88 Million                     ║
-║  Model File Size   │  22.6 MB (HDF5)                    ║
-║  Inference Speed   │  < 5ms per prediction              ║
-║  Runtime Backend   │  Pure NumPy (no TF/Keras)          ║
-╚══════════════════════════════════════════════════════════╝
-```
+| Specification | Value |
+|---|---|
+| **Architecture** | Sequential LSTM |
+| **Embedding Dim** | 50 |
+| **LSTM Units** | 128 |
+| **Vocabulary Size** | 8,979 words (10,000 incl. OOV) |
+| **Max Seq Length** | 745 tokens |
+| **Total Parameters** | ~1.88 Million |
+| **Model File Size** | 22.6 MB (HDF5) |
+| **Inference Speed** | < 5ms per prediction |
+| **Runtime Backend** | Pure NumPy (no TF/Keras) |
 
 ---
 
@@ -364,4 +360,3 @@ This project is open source and available under the [MIT License](LICENSE).
 *Built with ❤️ using Python, NumPy & Streamlit*
 
 </div>
-]]>
